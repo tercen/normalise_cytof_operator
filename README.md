@@ -1,8 +1,8 @@
-# Compensate CyTOF
+# Normalise CyTOF
 
 ##### Description
 
-The `Compensate CyTOF operator` is an operator to perform compensation on mass
+The `Normalise CyTOF operator` is an operator to perform the Normalisation of mass
 cytometry data.
 
 ##### Usage

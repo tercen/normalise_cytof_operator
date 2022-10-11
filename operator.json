@@ -1,10 +1,20 @@
 {
-  "name": "Template_R_operator",
+  "name": "normalise_cytof_operator",
   "description": "Calculate the mathematical average of the data points in a cell.",
-  "tags": ["basic statistics"],
+  "tags": [ "data preprocessing", "cytof"],
   "authors": ["tercen"],
-  "urls": ["https://github.com/tercen/template_R_operator"],
-  "properties": []
+  "urls": ["https://github.com/tercen/normalise_cytof_operator"],
+  "properties": [
+    {
+    "kind": "EnumeratedProperty",
+    "name": "Normalization",
+    "defaultValue": "dvs",
+    "description": "Specification of the beads to be used for normalization.",
+	  "values": [
+      "dvs",
+      "beta"
+      ]
+  },]
 }
 
 

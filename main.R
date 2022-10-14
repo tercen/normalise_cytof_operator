@@ -26,7 +26,7 @@ fset <- data %>% as_tibble() %>% bind_cols(files) %>%
 sce <- prepData(fset)
 # apply normalization; keep raw data
 res <- normCytof(sce, beads =Normalization, k = 50, 
-                 assays = c("counts", "exprs"), overwrite = FALSE)
+                 assays = c("counts", "exprs"), overwrite = TRUE, remove_beads = TRUE)
 # check number & percentage of bead / removed events
 # n <- ncol(sce); ns <- c(ncol(res$beads), ncol(res$removed))
 # data.frame(
@@ -49,7 +49,8 @@ df_plot <- tim::plot_file_to_df(p_file) %>%
 # and including normalized intensitied
 sce <- res$data
 assayNames(sce)
-df <- assay(sce, "normexprs")
+#df <- assay(sce, "normexprs")
+df <- assay(sce, "exprs")
 
 rids <- ctx$rselect()[1]
 colnames(rids) <- "channel"

@@ -1,7 +1,8 @@
 {
   "name": "normalise_cytof_operator",
-  "description": "Calculate the mathematical average of the data points in a cell.",
+  "description": "Normalisation of cytof data using beads.",
   "tags": [ "data preprocessing", "cytof"],
+  "container":"tercen/normalise_cytof_operator:latest",
   "authors": ["tercen"],
   "urls": ["https://github.com/tercen/normalise_cytof_operator"],
   "properties": [

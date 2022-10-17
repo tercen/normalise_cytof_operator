@@ -38,17 +38,20 @@ res <- normCytof(sce, beads =Normalization, k = 50,
 # plot bead vs. dna scatters
 sc_plot<-res$scatter
 # plot smoothed bead intensities
-line_plot<-res$lines
+line_plot<-res$lines 
 
-p_file <- suppressWarnings({tim::save_plot(sc_plot)})
-df_plot <- tim::plot_file_to_df(p_file) %>%
+sc_file <- suppressWarnings({tim::save_plot(sc_plot)})
+line_file <- suppressWarnings({tim::save_plot(line_plot)})
+
+vec_file<-c(sc_file,line_file)
+df_plot <- tim::plot_file_to_df(vec_file) %>%
   ctx$addNamespace() %>%
   as_relation() 
 
 # extract data excluding beads & doublets,
 # and including normalized intensitied
 sce <- res$data
-assayNames(sce)
+#assayNames(sce)
 #df <- assay(sce, "normexprs")
 df <- assay(sce, "exprs")
 

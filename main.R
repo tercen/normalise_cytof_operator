@@ -4,7 +4,7 @@ suppressPackageStartupMessages({
   library(CATALYST)
 })
 
-#tim::set_workflow_step_ids("https://tercen.com/tercen/w/bde20c9b529a415310cfcfa9b160c6fe/ds/ea372c47-9f55-446d-9ba4-30c3571d583a")
+#tim::set_workflow_step_ids("https://tercen.com/tercen/w/bde20c9b529a415310cfcfa9b160c6fe/ds/f93534bc-f2c8-4ec0-a874-0011ec1731e6")
 
 ctx = tercenCtx()
 
@@ -40,8 +40,23 @@ sc_plot<-res$scatter
 # plot smoothed bead intensities
 line_plot<-res$lines 
 
-sc_file <- suppressWarnings({tim::save_plot(sc_plot)})
-line_file <- suppressWarnings({tim::save_plot(line_plot)})
+sc_file <- suppressWarnings({tim::save_plot(sc_plot,
+                                            type = "png",
+                                            width = 750,
+                                            height = 750,
+                                            units = "px",
+                                            dpi = 144,
+                                            device = "png"
+)})
+
+line_file <- suppressWarnings({tim::save_plot(line_plot,
+                                              type = "png",
+                                              width = 750,
+                                              height = 750,
+                                              units = "px",
+                                              dpi = 144,
+                                              device = "png"
+)})
 
 #sc_df_plot <- tim::plot_file_to_df(sc_file) %>%
 #  ctx$addNamespace() %>%

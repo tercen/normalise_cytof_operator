@@ -4,7 +4,7 @@ suppressPackageStartupMessages({
   library(CATALYST)
 })
 
-#tim::set_workflow_step_ids("https://tercen.com/tercen/w/bde20c9b529a415310cfcfa9b160c6fe/ds/54b05ae2-e6c9-4b0b-af52-6384beda7f28")
+#tim::set_workflow_step_ids("https://tercen.com/tercen/w/bde20c9b529a415310cfcfa9b160c6fe/ds/ea372c47-9f55-446d-9ba4-30c3571d583a")
 
 ctx = tercenCtx()
 
@@ -43,10 +43,19 @@ line_plot<-res$lines
 sc_file <- suppressWarnings({tim::save_plot(sc_plot)})
 line_file <- suppressWarnings({tim::save_plot(line_plot)})
 
-vec_file<-c(sc_file,line_file)
-df_plot <- tim::plot_file_to_df(vec_file) %>%
+#sc_df_plot <- tim::plot_file_to_df(sc_file) %>%
+#  ctx$addNamespace() %>%
+#  as_relation() 
+
+#line_df_plot <- tim::plot_file_to_df(line_file) %>%
+#  ctx$addNamespace() %>%
+#  as_relation() 
+
+df_plot<-bind_rows(tim::plot_file_to_df(sc_file),tim::plot_file_to_df(line_file))%>%
   ctx$addNamespace() %>%
   as_relation() 
+
+
 
 # extract data excluding beads & doublets,
 # and including normalized intensitied

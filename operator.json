@@ -1,8 +1,8 @@
 {
-  "name": "normalise_cytof_operator",
-  "description": "Normalisation of cytof data using beads.",
+  "name": "Normalise CyTOF",
+  "description": "Normalisation of CyTOF data using beads.",
   "tags": [ "data preprocessing", "cytof"],
-  "container":"tercen/normalise_cytof_operator:0.1.7",
+  "container":"tercen/normalise_cytof_operator:0.1.8",
   "authors": ["tercen"],
   "urls": ["https://github.com/tercen/normalise_cytof_operator"],
   "properties": [

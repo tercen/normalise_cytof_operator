@@ -62,13 +62,13 @@ sce <- res$data
 df <- assay(sce, "exprs")
 
 rids <- ctx$rselect()[1]
-colnames(rids) <- "channel"
+colnames(rids) <- "variable"
 
 df_out <- df %>%
-  as_tibble(rownames = "channel") %>%
-  tidyr::pivot_longer(cols = !contains("channel"), names_to = ".ci") %>%
+  as_tibble(rownames = "variable") %>%
+  tidyr::pivot_longer(cols = !contains("variable"), names_to = ".ci") %>%
   mutate(.ci = as.integer(gsub("V", "", .ci)) - 1L) %>%
-  left_join(rids %>% mutate(.ri = seq(1, nrow(.)) - 1L), by = "channel") %>%
+  left_join(rids %>% mutate(.ri = seq(1, nrow(.)) - 1L), by = "variable") %>%
   ctx$addNamespace() %>%
   as_relation() 
 

@@ -11,6 +11,9 @@ Normalization <- ctx$op.value("Normalization", as.character, "dvs")
 data <- ctx$as.matrix() %>% t()
 colnames(data) <- ctx$rselect()[[1]]
 
+colnames(data) <-sub('^([0-9][0-9]+[0-9])([A-Z]+[a-z])', '\\2\\1', colnames(data))
+colnames(data) <-sub('_.*$', '', colnames(data))
+
 files <- ctx$cselect() %>% 
   select(contains("filename"))
 

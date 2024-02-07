@@ -8,14 +8,27 @@
   "properties": [
     {
     "kind": "EnumeratedProperty",
-    "name": "Normalization",
+    "name": "beads",
     "defaultValue": "dvs",
-    "description": "Specification of the beads to be used for normalization.",
-	  "values": [
+    "description": "Beads to be used for normalisation: dvs (for bead masses 140, 151, 153 ,165, 175) or beta (for bead masses 139, 141, 159, 169, 175).",
+  "values": [
       "dvs",
       "beta"
       ]
-  }]
+    },
+    {
+    "kind": "DoubleProperty",
+    "name": "plot_width",
+    "defaultValue": 500,
+    "description": "Diagnostic plot width (pixels)."
+    },
+    {
+    "kind": "DoubleProperty",
+    "name": "plot_height",
+    "defaultValue": 500,
+    "description": "Diagnostic plot height (pixels)."
+    }
+  ]
 }
 
 

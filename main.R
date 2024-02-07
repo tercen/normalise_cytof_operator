@@ -6,19 +6,23 @@ suppressPackageStartupMessages({
 
 ctx = tercenCtx()
 
-Normalization <- ctx$op.value("Normalization", as.character, "dvs")
+beads <- ctx$op.value("beads", as.character, "dvs")
+plot_width <- ctx$op.value("plot_width", as.double, 500)
+plot_height <- ctx$op.value("plot_height", as.double, 500)
 
 data <- ctx$as.matrix() %>% t()
 colnames(data) <- ctx$rselect()[[1]]
 
-colnames(data) <-sub('^([0-9][0-9]+[0-9])([A-Z]+[a-z])', '\\2\\1', colnames(data))
-colnames(data) <-sub('_.*$', '', colnames(data))
+colnames(data) <- sub('^([0-9][0-9]+[0-9])([A-Z]+[a-z])', '\\2\\1', colnames(data))
+colnames(data) <- sub('_.*$', '', colnames(data))
 
 files <- ctx$cselect() %>% 
   select(contains("filename"))
 
 # construct flowset
-fset <- data %>% as_tibble() %>% bind_cols(files) %>%
+fset <- data %>% 
+  as_tibble() %>% 
+  bind_cols(files) %>%
   group_by({if("filename" %in% names(.)) filename else NULL}) %>% 
   select(.,-filename)%>% 
   group_map(~tim::matrix_to_flowFrame(as.matrix(.x))) %>%
@@ -27,59 +31,69 @@ fset <- data %>% as_tibble() %>% bind_cols(files) %>%
 # construct SCE
 sce <- prepData(fset)
 # apply normalization; replace raw data & remove beads
-res <- normCytof(sce, beads =Normalization, k = 50, 
-                 assays = c("counts", "exprs"), overwrite = TRUE, remove_beads = TRUE)
+res <- normCytof(
+  sce,
+  beads = beads,
+  k = 500, 
+  assays = c("counts", "exprs"),
+  overwrite = TRUE,
+  remove_beads = FALSE
+)
 
 # plot bead vs. dna scatters
-sc_plot<-res$scatter
-sc_file <- suppressWarnings({tim::save_plot(sc_plot,
-                                            type = "png",
-                                            width = 750,
-                                            height = 750,
-                                            units = "px",
-                                            dpi = 144,
-                                            device = "png"
-)})
+sc_file <- tim::save_plot(
+  res$scatter,
+  type = "png",
+  width = plot_width,
+  height = plot_height,
+  units = "px",
+  dpi = 144,
+  device = "png"
+)
 
 # plot smoothed bead intensities
-line_plot<-res$lines 
-line_file <- suppressWarnings({tim::save_plot(line_plot,
-                                              type = "png",
-                                              width = 750,
-                                              height = 750,
-                                              units = "px",
-                                              dpi = 144,
-                                              device = "png"
-)})
+line_file <- tim::save_plot(
+  res$lines,
+  type = "png",
+  width = plot_width,
+  height = plot_height,
+  units = "px",
+  dpi = 144,
+  device = "png"
+)
 
 #bind both plot
-df_plot<-bind_rows(tim::plot_file_to_df(sc_file),tim::plot_file_to_df(line_file))%>%
+df_plot <- bind_rows(
+    tercen::file_to_tercen(sc_file, filename = "Beads_vs_DNA_Scatters.png"),
+    tercen::file_to_tercen(line_file, filename = "Smoothed_Bead_Intensities.png")
+  ) %>%
   ctx$addNamespace() %>%
-  as_relation() 
-
-
+  as_relation(relation_name = "Diagnostic Plots")  %>%
+  as_join_operator(list(), list())
 
 # extract data excluding beads & doublets,
 # and including normalized intensitied
-sce <- res$data
-df <- assay(sce, "exprs")
-
-rids <- ctx$rselect()[1]
-colnames(rids) <- "variable"
+df <- assay(res$data, "exprs")
+rownames(df) <- as.integer(1:nrow(df) - 1)
+colnames(df) <- as.integer(1:ncol(df) - 1)
 
 df_out <- df %>%
-  as_tibble(rownames = "variable") %>%
-  tidyr::pivot_longer(cols = !contains("variable"), names_to = ".ci") %>%
-  mutate(.ci = as.integer(gsub("V", "", .ci)) - 1L) %>%
-  left_join(rids %>% mutate(.ri = seq(1, nrow(.)) - 1L), by = "variable") %>%
+  as_tibble(rownames = ".ri_norm") %>%
+  tidyr::pivot_longer(cols = !contains(".ri_norm"), names_to = ".ci_norm") %>%
+  mutate(.ri_norm = as.integer(.ri_norm), .ci_norm = as.integer(.ci_norm)) %>%
   ctx$addNamespace() %>%
-  as_relation() 
+  as_relation(relation_name = "Normalised Data")
+
+df_beads <- tibble(is_bead = as.double(res$data$is_bead)) %>%
+  mutate(.ci_beads = 1:nrow(.) - 1L) %>%
+  ctx$addNamespace() %>%
+  as_relation(relation_name = "Beads")
 
 join_res = df_out %>%
-  left_join_relation(ctx$crelation, ".ci", ctx$crelation$rids) %>%
-  left_join_relation(df_plot, list(), list()) %>%
-  as_join_operator(ctx$cnames, ctx$cnames)
+  left_join_relation(df_beads, ".ci_norm", ".ci_beads") %>%
+  left_join_relation(ctx$rrelation, ".ri_norm", ctx$rrelation$rids) %>%
+  left_join_relation(ctx$crelation, ".ci_norm", ctx$crelation$rids) %>%
+  as_join_operator(c(ctx$rnames, ctx$cnames), c(ctx$rnames, ctx$cnames))
 
-join_res %>%
-  save_relation(ctx)
+result <- save_relation(list(join_res, df_plot), ctx)
 

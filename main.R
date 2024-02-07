@@ -11,7 +11,8 @@ plot_width <- ctx$op.value("plot_width", as.double, 500)
 plot_height <- ctx$op.value("plot_height", as.double, 500)
 
 data <- ctx$as.matrix() %>% t()
-colnames(data) <- ctx$rselect()[[1]]
+row_data <- ctx$rselect()[[1]]
+colnames(data) <- row_data
 
 colnames(data) <- sub('^([0-9][0-9]+[0-9])([A-Z]+[a-z])', '\\2\\1', colnames(data))
 colnames(data) <- sub('_.*$', '', colnames(data))
@@ -74,7 +75,11 @@ df_plot <- bind_rows(
 # extract data excluding beads & doublets,
 # and including normalized intensitied
 df <- assay(res$data, "exprs")
-rownames(df) <- as.integer(1:nrow(df) - 1)
+
+rids <- seq_along(row_data) - 1L
+names(rids) <- row_data
+
+rownames(df) <- rids[rownames(df)]
 colnames(df) <- as.integer(1:ncol(df) - 1)
 
 df_out <- df %>%

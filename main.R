@@ -14,20 +14,20 @@ data <- ctx$as.matrix() %>% t()
 row_data <- ctx$rselect()[[1]]
 colnames(data) <- row_data
 
-colnames(data) <- sub('^([0-9][0-9]+[0-9])([A-Z]+[a-z])', '\\2\\1', colnames(data))
-colnames(data) <- sub('_.*$', '', colnames(data))
-
 files <- ctx$cselect() %>% 
-  select(contains("filename"))
+  select(contains(c("filename", "barcodes", "population"))) %>%
+  mutate(.ci = 1:nrow(.) - 1L) 
+  
+flow.frames <- data %>% 
+  as_tibble() %>%
+  mutate(.ci = 1:nrow(.) - 1L) %>%
+  left_join(files, by = ".ci") %>% 
+  group_by(across(contains(c("filename", "barcodes", "population")))) %>% 
+  group_map(~tim::matrix_to_flowFrame(as.matrix(.x))) 
 
-# construct flowset
-fset <- data %>% 
-  as_tibble() %>% 
-  bind_cols(files) %>%
-  group_by({if("filename" %in% names(.)) filename else NULL}) %>% 
-  select(.,-filename)%>% 
-  group_map(~tim::matrix_to_flowFrame(as.matrix(.x))) %>%
-  flowCore::flowSet()
+names(flow.frames) <- levels(as.factor(files[[1]]))
+
+fset <- flowCore::flowSet(flow.frames)
 
 # construct SCE
 sce <- prepData(fset)
@@ -38,7 +38,9 @@ res <- normCytof(
   k = 500, 
   assays = c("counts", "exprs"),
   overwrite = TRUE,
-  remove_beads = FALSE
+  remove_beads = FALSE,
+  transform = TRUE,
+  cofactor = 5
 )
 
 # plot bead vs. dna scatters
@@ -98,7 +100,7 @@ join_res = df_out %>%
   left_join_relation(df_beads, ".ci_norm", ".ci_beads") %>%
   left_join_relation(ctx$rrelation, ".ri_norm", ctx$rrelation$rids) %>%
   left_join_relation(ctx$crelation, ".ci_norm", ctx$crelation$rids) %>%
-  as_join_operator(c(ctx$rnames, ctx$cnames), c(ctx$rnames, ctx$cnames))
+  as_join_operator(unname(c(ctx$rnames, ctx$cnames)), unname(c(ctx$rnames, ctx$cnames)))
 
 result <- save_relation(list(join_res, df_plot), ctx)
 
